@@ -60,6 +60,84 @@ class Controller {
       }
     }
   }
+
+  static async addBuilding(req, res) {
+    // ! For img Temporary Use URL, Later Use File
+    const { name, desc, img, condition } = req.body;
+    if (!name || !desc || !img || !condition) {
+      throw { name: "FIELDS_UNCOMPLETE" };
+    }
+    try {
+      let data = await Building.create({ name, desc, img, condition });
+
+      res.status(201).json("Building Add Successfully!");
+    } catch (error) {
+      if (error.name === "FIELDS_UNCOMPLETE") {
+        res.status(401).json("Please Fill all the Fields!");
+      } else {
+        res.status(400).json(error);
+      }
+    }
+  }
+
+  static async getAllBuilding(req, res) {
+    try {
+      let data = await Building.findAll();
+      res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  static async deleteBuilding(req, res) {
+    let { buildingId } = req.params;
+    try {
+      let findBuilding = await Building.findOne({
+        where: {
+          id: buildingId,
+        },
+      });
+      if (!findBuilding) {
+        throw { name: "BUILDING_NOT_FOUND" };
+      }
+
+      await Building.destroy({ where: { id: buildingId } });
+      res
+        .status(200)
+        .json(`Building with Name ${findBuilding.name} Remove Successfully`);
+    } catch (error) {
+      if (error.name === "BUILDING_NOT_FOUND") {
+        res.status(403).json(`Building with id ${buildingId} not Found!`);
+      } else {
+        console.log(error);
+      }
+    }
+  }
+
+  static async editBuilding(req, res) {
+    let { buildingId } = req.params;
+    const { name, desc, img, condition } = req.body;
+    try {
+      let data = await Building.update(
+        { name, desc, img, condition },
+        { where: { id: buildingId } }
+      );
+
+      res.status(200).json(`Building with id ${buildingId} Updated!`);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  static async detailBuilding(req, res) {
+    let { buildingId } = req.params;
+    try {
+      let data = await Building.findOne({ where: { id: buildingId } });
+      res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 module.exports = Controller;
